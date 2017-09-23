@@ -35,6 +35,8 @@ def geocode(address):
 
     try:
         loc = geo.geocode(address, exactly_one=True)
+        if loc.raw.get('partial_match'):
+            return None
         return (loc.longitude, loc.latitude)
     except AttributeError:
         return None
