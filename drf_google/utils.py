@@ -73,7 +73,7 @@ def places(place_id, key=GOOGLE_KEY):
         res.raise_for_status()
         res = res.json()['result']['opening_hours']
     except (AttributeError, KeyError):
-        return None
+        return {}
     except:
         raise IOError('error contacting google places')
 
