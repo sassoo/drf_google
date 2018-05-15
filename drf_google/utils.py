@@ -11,6 +11,7 @@
 
 import requests
 
+from datetime import datetime
 from django.conf import settings
 from geopy.geocoders import GoogleV3
 
@@ -19,7 +20,7 @@ GOOGLE_KEY = settings.GOOGLE_KEY
 PLACES_URL = 'https://maps.googleapis.com/maps/api/place/details/json'
 
 
-def geocode(address):
+def geocode(address, key=GOOGLE_KEY):
     """ Find lat/lng from Google Maps from an address
 
     :param address:
@@ -28,16 +29,21 @@ def geocode(address):
         IOError in the event that communicating with google
         fails for any reason.
     :return:
-        A tuple containing (longitude, latitude)
+        A dict containing (lat, lng, tz)
     """
 
-    geo = GoogleV3()
+    geo = GoogleV3(key)
 
     try:
         loc = geo.geocode(address, exactly_one=True)
         if loc.raw.get('partial_match'):
             return None
-        return (loc.longitude, loc.latitude)
+
+        tz = geo.timezone((loc.latitude, loc.longitude))
+        tz = tz.localize(datetime.now())
+        tz = tz.strftime('%Z')
+
+        return {'lng': loc.longitude, 'lat': loc.latitude, 'tz': tz}
     except AttributeError:
         return None
     except:
